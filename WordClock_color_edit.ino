@@ -4,12 +4,14 @@
 #include <Adafruit_NeoMatrix.h>
 #include <Adafruit_NeoPixel.h>
 #include <Wire.h>         //http://arduino.cc/en/Reference/Wire (included with Arduino IDE)
+#include <EEPROM.h>
 #include "RTClib.h"
 #define PIN 6
 
 //IF CLOCK TIME IS WRONG: RUN FILE->EXAMPLE->DS1307RTC->SET TIME
 
 RTC_DS3231 rtc;
+int DST;
 
 // matrix of 11 - 16 bit ints (shorts) for displaying the leds
 uint16_t mask[11];
@@ -68,6 +70,7 @@ uint16_t mask[11];
   int mytimehr;
   int mytimemin;
   int mytimesec;
+  int mydayofweek;
   
   int j; //an integer for the color shifting effect
 
@@ -247,6 +250,14 @@ void setup() {
     while (1);
   }
 
+  /** store DST flag **/
+  DST = EEPROM.get(0, DST);
+  if(DST != 0 && DST != 1)  
+  {     
+    DST = 1;  
+    EEPROM.put(0, DST);
+  }
+  
   if (rtc.lostPower()) {
     Serial.println("RTC lost power, lets set the time!"); //program LEDs to show "SET CLOCK"
     // following line sets the RTC to the date & time this sketch was compiled
@@ -310,6 +321,39 @@ void loop() {
     mytimehr=now.hour();
     mytimemin=now.minute();
     mytimesec=now.second();
+    mytimedayofweek=now.dayOfTheWeek();
+  
+  /** DST Settings **/
+  // on the 2nd sunday in march at 2am increase an hour
+  if (mytimedayofweek == 0 
+      && mytimemonth == 3 
+      && mytimeday >= 8 
+      && mytimeday <= 16 
+      && mytimehr == 2 
+      && mytimemin == 0 
+      && mytimesec == 0 
+      && DST == 0)     
+  {
+    rtc.adjust(DateTime(now.year(), now.month(), now.day(), now.hour()+1, now.minute(), now.second()));       
+    DST = 1;       
+    EEPROM.put(0, DST);
+  }     
+  // on the first sunday in november at 2am decrease an hour
+  else if(mytimedayofweek == 0 
+          && mytimemonth == 11 
+          && mytimeday >= 1 
+          && mytimeday <= 8 
+          && mytimehr == 2 
+          && mytimemin == 0 
+          && mytimesec == 0 
+          && DST == 1)     
+  {
+    rtc.adjust(DateTime(now.year(), now.month(), now.day(), now.hour()-1, now.minute(), now.second()));       
+    DST = 0;       
+    EEPROM.put(0, DST);
+  }
+  
+  /********************/
 //////////////////////////////////////////PHOTORESISTOR/////////////////////////////////////////////
     //Photoresistor settings
     photoRead = analogRead(photoResistor);  
