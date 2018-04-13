@@ -358,16 +358,19 @@ void loop() {
     //Photoresistor settings
     photoRead = analogRead(photoResistor);  
 //    Serial.print(photoRead);     // the raw analog reading
-//      if (photoRead < 200) {
-//        dimmer=5;
-//      } else if (photoRead < 400) {
-//        dimmer=4;
-//      } else if (photoRead < 600) {
-//        dimmer=2;
-//      } else {
-//        dimmer=1;
-//      }
-      delay(100);
+    if (photoRead < 200) {
+      dimmer=5;
+    } else if (photoRead < 400) {
+      dimmer=4;
+    } else if (photoRead < 600) {
+      dimmer=2;
+    } else {
+      dimmer=1;
+    }
+    dimred=wordred/dimmer;
+    dimblue=wordblue/dimmer;
+    dimgreen=wordgreen/dimmer;
+    delay(100);
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 
