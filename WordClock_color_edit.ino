@@ -31,7 +31,7 @@ uint16_t mask[11];
   int buttonDown=4;
   int photoResistor=A0;
   int photoRead;
-  int dimmer=1;
+  double dimmer=1.0;
 
   //////////////////////////////////SET COLORS/////////////////////////////
 
@@ -59,9 +59,9 @@ uint16_t mask[11];
   int daygreen  = 100;
 
   //DIMABLE (once photoresistor is programmed)
-  int dimred=wordred/dimmer;
-  int dimblue=wordblue/dimmer;
-  int dimgreen=wordgreen/dimmer;
+  int dimred=wordred*dimmer;
+  int dimblue=wordblue*dimmer;
+  int dimgreen=wordgreen*dimmer;
   
 //////////////////////////////////////////////////////////////////////////////
 
@@ -321,11 +321,11 @@ void loop() {
     mytimehr=now.hour();
     mytimemin=now.minute();
     mytimesec=now.second();
-    mytimedayofweek=now.dayOfTheWeek();
+    mydayofweek=now.dayOfTheWeek();
   
   /** DST Settings **/
   // on the 2nd sunday in march at 2am increase an hour
-  if (mytimedayofweek == 0 
+  if (mydayofweek == 0 
       && mytimemonth == 3 
       && mytimeday >= 8 
       && mytimeday <= 16 
@@ -339,7 +339,7 @@ void loop() {
     EEPROM.put(0, DST);
   }     
   // on the first sunday in november at 2am decrease an hour
-  else if(mytimedayofweek == 0 
+  else if(mydayofweek == 0 
           && mytimemonth == 11 
           && mytimeday >= 1 
           && mytimeday <= 8 
@@ -357,19 +357,19 @@ void loop() {
 //////////////////////////////////////////PHOTORESISTOR/////////////////////////////////////////////
     //Photoresistor settings
     photoRead = analogRead(photoResistor);  
-//    Serial.print(photoRead);     // the raw analog reading
+    //Serial.println(photoRead);     // the raw analog reading
     if (photoRead < 200) {
-      dimmer=5;
+      dimmer=.25;
     } else if (photoRead < 400) {
-      dimmer=4;
+      dimmer=.5;
     } else if (photoRead < 600) {
-      dimmer=2;
+      dimmer=.75;
     } else {
       dimmer=1;
     }
-    dimred=wordred/dimmer;
-    dimblue=wordblue/dimmer;
-    dimgreen=wordgreen/dimmer;
+    dimred=wordred*dimmer;
+    dimblue=wordblue*dimmer;
+    dimgreen=wordgreen*dimmer;
     delay(100);
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
