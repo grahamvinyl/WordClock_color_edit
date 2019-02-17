@@ -31,6 +31,9 @@ uint16_t mask[11];
   int buttonDown=4;
   int photoResistor=A0;
   int photoRead;
+  int DIM_COUNT = 0;
+  double lastDimmer=1.0;
+#define DIM_THRESHHOLD 100
   double dimmer=1.0;
 
   //////////////////////////////////SET COLORS/////////////////////////////
@@ -367,9 +370,24 @@ void loop() {
     } else {
       dimmer=1;
     }
-    dimred=wordred*dimmer;
-    dimblue=wordblue*dimmer;
-    dimgreen=wordgreen*dimmer;
+    
+    if (lastDimmer == dimmer)
+    {
+      if (DIM_COUNT > DIM_THRESHHOLD) // current dim level has sustained for long enough
+      {
+         dimred=wordred*dimmer;
+         dimblue=wordblue*dimmer;
+         dimgreen=wordgreen*dimmer;
+         DIM_COUNT=0;
+      }
+      DIM_COUNT++;
+    }
+    else // new dim level, so reset the counter
+    {
+      DIM_COUNT=0;
+    }
+    lastDimmer=dimmer;
+   
     delay(100);
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
