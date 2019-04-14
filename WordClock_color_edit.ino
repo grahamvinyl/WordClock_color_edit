@@ -39,9 +39,9 @@ uint16_t mask[11];
   //////////////////////////////////SET COLORS/////////////////////////////
 
   //WORDCLOCK COLORS
-  int wordred   = 80;
-  int wordblue  = 255;
-  int wordgreen = 160;
+  int wordred   = 20;
+  int wordblue  = 220;
+  int wordgreen = 255;
 
   //DIGIT COLORS (HOURS)
   int hourred   = 130;
@@ -248,17 +248,26 @@ void setup() {
 
 
    // This info pulled from RTClib.h
- if (! rtc.begin()) {
+   if (! rtc.begin()) {
     Serial.println("Couldn't find RTC"); //program LEDs to show "NO CLOCK"
     while (1);
-  }
+   }
 
   /** store DST flag **/
   DST = EEPROM.get(0, DST);
+  Serial.print("DST value is ");
+  Serial.println(DST, DEC);
   if(DST != 0 && DST != 1)  
   {     
+    Serial.println("set DST");
     DST = 1;  
     EEPROM.put(0, DST);
+  }
+  else if (DST == 1) 
+  {
+    //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    //DateTime now = rtc.now();
+    //rtc.adjust(DateTime(now.year(), now.month(), now.day(), now.hour()+1, now.minute(), now.second()));
   }
   
   if (rtc.lostPower()) {
@@ -340,6 +349,7 @@ void loop() {
     rtc.adjust(DateTime(now.year(), now.month(), now.day(), now.hour()+1, now.minute(), now.second()));       
     DST = 1;       
     EEPROM.put(0, DST);
+    Serial.println("Adjust for DST");
   }     
   // on the first sunday in november at 2am decrease an hour
   else if(mydayofweek == 0 
@@ -354,6 +364,7 @@ void loop() {
     rtc.adjust(DateTime(now.year(), now.month(), now.day(), now.hour()-1, now.minute(), now.second()));       
     DST = 0;       
     EEPROM.put(0, DST);
+    Serial.println("Adjust for Standard");
   }
   
   /********************/
@@ -361,12 +372,10 @@ void loop() {
     //Photoresistor settings
     photoRead = analogRead(photoResistor);  
     //Serial.println(photoRead);     // the raw analog reading
-    if (photoRead < 200) {
+    if (photoRead < 150) {
       dimmer=.25;
-    } else if (photoRead < 400) {
+    } else if (photoRead < 200) {
       dimmer=.5;
-    } else if (photoRead < 600) {
-      dimmer=.75;
     } else {
       dimmer=1;
     }
@@ -392,21 +401,22 @@ void loop() {
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    
-    //Serial.print(now.year(), DEC);
-    //Serial.print('/');
-    //Serial.print(now.month(), DEC);
-    //Serial.print('/');
-    //Serial.print(now.day(), DEC);
-    //Serial.print(" (");
+#if 0
+    Serial.print(now.year(), DEC);
+    Serial.print('/');
+    Serial.print(now.month(), DEC);
+    Serial.print('/');
+    Serial.print(now.day(), DEC);
+    Serial.print(" (");
     //Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
-    //Serial.print(") ");
-    //Serial.print(now.hour(), DEC);
-    //Serial.print(':');
-    //Serial.print(now.minute(), DEC);
-    //Serial.print(':');
-    //Serial.print(now.second(), DEC);
-    //Serial.println();
+    Serial.print(") ");
+    Serial.print(now.hour(), DEC);
+    Serial.print(':');
+    Serial.print(now.minute(), DEC);
+    Serial.print(':');
+    Serial.print(now.second(), DEC);
+    Serial.println();
+#endif 
 
   readModeButton();
 
@@ -773,4 +783,3 @@ void displayWords() {
   }
   applyMask(); 
 }
-
